@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: rgu-hub-backend
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn rguHub.wsgi:application --workers=2 --threads=2 --timeout=120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_SETTINGS_MODULE
+        value: rguHub.settings
+      - key: ALLOWED_HOSTS
+        value: "rgu-hub-backend.onrender.com"
+      - key: LOG_LEVEL
+        value: INFO
+    autoDeploy: true
+

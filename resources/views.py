@@ -195,7 +195,7 @@ class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
                 qs = qs.filter(term__term_type="YEAR", term__term_number=year)
             except (TypeError, ValueError):
                 return qs.none()  # invalid year
-        print(qs.query)
+        # Avoid printing raw SQL in production; use logger at debug level instead if needed
 
         return qs
 
