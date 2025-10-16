@@ -75,9 +75,9 @@ if not DEBUG:
     ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -176,7 +176,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Prefer explicit allowlist in production; allow-all can be enabled locally via env
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ['1','true','yes','on']
 if not CORS_ALLOW_ALL_ORIGINS:
-    CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', 'https://www.rguhub.site,https://rguhub.site').split(',') if o.strip()]
 
 
 # CSRF Trusted Origins (e.g., https://*.onrender.com)
