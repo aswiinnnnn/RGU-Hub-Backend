@@ -106,15 +106,15 @@ class LatestUpdatesViewSet(viewsets.ViewSet):
         combines them, sorts by date, and returns the 6 most recent items.
         """
         # fetch last 5 subject materials
-        materials = SubjectMaterial.objects.order_by("-created_at")[:6]
-        recruitments = Recruitment.objects.order_by("-posted_on")[:6]
+        materials = SubjectMaterial.objects.order_by("-created_at")[:4]
+        recruitments = Recruitment.objects.order_by("-posted_on")[:4]
 
         # combine and sort by date
         combined = sorted(
             list(materials) + list(recruitments),
             key=lambda x: x.created_at if hasattr(x, "created_at") else x.posted_on,
             reverse=True,
-        )[:6]
+        )[:4    ]
 
         data = []
         for obj in combined:
