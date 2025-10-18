@@ -2,6 +2,8 @@ from django.contrib import admin
 from .models import Program, Syllabus, Term, Subject, SubjectMaterial, MaterialType
 from django.utils.html import format_html
 import os
+import traceback
+from django.db import transaction
 
 # ----------------- Program Admin -----------------
 @admin.register(Program)
@@ -54,11 +56,14 @@ class SubjectMaterialAdmin(admin.ModelAdmin):
     search_fields = ("title", "subject__name", "subject__code")
     readonly_fields = ("file_url", "file_type", "file_size", "created_at")
 
+    # ----------------- Admin Display Methods -----------------
     def uploaded_link(self, obj):
         url = self.file_url(obj)
         if url:
             return format_html(f"<a href='{url}' target='_blank'>Open File</a>")
         return "-"
+    uploaded_link.short_description = "Cloudinary URL"
+
     def file_url(self, obj):
         try:
             if obj.file and hasattr(obj.file, 'url') and obj.file.url:
@@ -67,7 +72,6 @@ class SubjectMaterialAdmin(admin.ModelAdmin):
             pass
         return getattr(obj, 'url', None)
     file_url.short_description = "Cloudinary URL"
-    uploaded_link.short_description = "Cloudinary URL"
 
     def file_type(self, obj):
         if obj.file and obj.file.name:
@@ -91,6 +95,24 @@ class SubjectMaterialAdmin(admin.ModelAdmin):
         except Exception:
             return "-"
     file_size.short_description = "File Size"
+
+    # ----------------- Override save_model -----------------
+    def save_model(self, request, obj, form, change):
+        """
+        Ensure file is uploaded and URL is saved. Catch exceptions to debug on deployment.
+        """
+        try:
+            # Save object atomically to catch DB errors
+            with transaction.atomic():
+                super().save_model(request, obj, form, change)
+
+            # Optional: log the uploaded file URL
+            url = getattr(obj.file, 'url', None)
+            print("PDF saved successfully. Cloudinary URL:", url)
+
+        except Exception as e:
+            print("Error saving SubjectMaterial:", e)
+            traceback.print_exc()
 
 
 # ----------------- MaterialType Admin -----------------
