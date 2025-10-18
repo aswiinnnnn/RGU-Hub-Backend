@@ -215,7 +215,6 @@ WHITENOISE_MANIFEST_STRICT = False
 
 
 if USE_CLOUDINARY:
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     CLOUDINARY_STORAGE = {
         "CLOUD_NAME": CLOUDINARY_CLOUD_NAME,
         "API_KEY": CLOUDINARY_API_KEY,
