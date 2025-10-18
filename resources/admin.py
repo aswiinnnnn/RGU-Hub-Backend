@@ -76,8 +76,10 @@ class SubjectMaterialAdmin(admin.ModelAdmin):
     file_type.short_description = "File Type"
 
     def file_size(self, obj):
-        if obj.file and hasattr(obj.file, "size"):
-            size = obj.file.size
+        try:
+            size = getattr(obj.file, "size", None) if getattr(obj, "file", None) else None
+            if size is None:
+                return "-"
             if size < 1024:
                 return f"{size} B"
             elif size < 1024 * 1024:
@@ -86,7 +88,8 @@ class SubjectMaterialAdmin(admin.ModelAdmin):
                 return f"{size / (1024 * 1024):.2f} MB"
             else:
                 return f"{size / (1024 * 1024 * 1024):.2f} GB"
-        return "Unknown"
+        except Exception:
+            return "-"
     file_size.short_description = "File Size"
 
 
