@@ -31,7 +31,17 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'dev-insecure-key-change-me')
 
 DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
+hosts_env = os.getenv('ALLOWED_HOSTS')
+if hosts_env:
+    ALLOWED_HOSTS = [
+        h.strip().strip('"').strip("'")
+        for h in hosts_env.split(',')
+        if h.strip().strip('"').strip("'")
+    ]
+    if not ALLOWED_HOSTS:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Support Render.com default hostname and optional custom hosts via env
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
@@ -75,8 +85,9 @@ if not DEBUG:
     ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    
     'whitenoise.middleware.WhiteNoiseMiddleware',
     
     
@@ -112,14 +123,20 @@ WSGI_APPLICATION = 'rguHub.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# Database configuration
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
-    # Use dj-database-url style parsing if provided
+    # Use dj-database-url for PostgreSQL (including Neon)
     import dj_database_url
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
     }
 else:
+    # Fallback to SQLite for local development
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -169,7 +186,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Prefer explicit allowlist in production; allow-all can be enabled locally via env
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ['1','true','yes','on']
 if not CORS_ALLOW_ALL_ORIGINS:
-    CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', 'https://www.rguhub.site,https://rguhub.site').split(',') if o.strip()]
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', 'https://www.rguhub.site,https://rguhub.site,http://127.0.0.1').split(',') if o.strip()]
 
 
 # CSRF Trusted Origins (e.g., https://*.onrender.com)
